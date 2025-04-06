@@ -1,0 +1,1131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KDJ Salon | Luxury Hair Experience</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/build/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/examples/js/controls/OrbitControls.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
+    <script src="https://unpkg.com/split-type"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/ScrollTrigger.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&display=swap');
+        
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background-color: #fafafa;
+            color: #1a1a1a;
+            overflow-x: hidden;
+        }
+        
+        .text-stroke {
+            -webkit-text-stroke: 1px #1a1a1a;
+            color: transparent;
+        }
+        
+        .gradient-text {
+            background: linear-gradient(90deg, #ff4d4d, #f9cb28);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        
+        .blob {
+            position: absolute;
+            width: 500px;
+            height: 500px;
+            background: linear-gradient(180deg, rgba(255,77,77,0.1) 0%, rgba(249,203,40,0.1) 100%);
+            border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%;
+            filter: blur(30px);
+            z-index: -1;
+            animation: morph 15s ease-in-out infinite;
+        }
+        
+        @keyframes morph {
+            0% { border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%; }
+            50% { border-radius: 58% 42% 75% 25% / 76% 46% 54% 24%; }
+            100% { border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%; }
+        }
+        
+        .service-card {
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            transform-style: preserve-3d;
+        }
+        
+        .service-card:hover {
+            transform: translateY(-10px) rotateX(5deg);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+        
+        .parallax-bg {
+            background-attachment: fixed;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-size: cover;
+        }
+        
+        .scroll-indicator {
+            animation: bounce 2s infinite;
+        }
+        
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% {transform: translateY(0);}
+            40% {transform: translateY(-20px);}
+            60% {transform: translateY(-10px);}
+        }
+        
+        .marquee {
+            animation: marquee 20s linear infinite;
+        }
+        
+        @keyframes marquee {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
+        
+        #hair-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+        }
+    </style>
+</head>
+<body class="antialiased">
+    <!-- 3D Background Canvas -->
+    <div id="threejs-bg"></div>
+    
+    <!-- p5.js Hair Animation -->
+    <div id="hair-canvas"></div>
+    
+    <!-- Preloader -->
+    <div id="preloader" class="fixed inset-0 bg-white z-50 flex items-center justify-center">
+        <div class="text-center">
+            <div class="inline-block relative">
+                <div class="w-16 h-16 border-4 border-black border-t-transparent rounded-full animate-spin"></div>
+                <div class="absolute inset-0 flex items-center justify-center">
+                    <div class="w-8 h-8 bg-gradient-to-r from-amber-400 to-red-500 rounded-full"></div>
+                </div>
+            </div>
+            <p class="mt-4 text-lg font-medium">KDJ Salon</p>
+        </div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="fixed w-full z-50 bg-white bg-opacity-80 backdrop-blur-md border-b border-gray-100">
+        <div class="container mx-auto px-6 py-4">
+            <div class="flex justify-between items-center">
+                <a href="#" class="text-2xl font-bold">
+                    <span class="gradient-text">KDJ</span> <span class="text-stroke">SALON</span>
+                </a>
+                
+                <div class="hidden lg:flex space-x-10">
+                    <a href="#home" class="text-gray-800 hover:text-red-500 transition-all duration-300 font-medium">Home</a>
+                    <a href="#services" class="text-gray-800 hover:text-red-500 transition-all duration-300 font-medium">Services</a>
+                    <a href="#experience" class="text-gray-800 hover:text-red-500 transition-all duration-300 font-medium">Experience</a>
+                    <a href="#stylists" class="text-gray-800 hover:text-red-500 transition-all duration-300 font-medium">Stylists</a>
+                    <a href="#testimonials" class="text-gray-800 hover:text-red-500 transition-all duration-300 font-medium">Testimonials</a>
+                    <a href="#contact" class="text-gray-800 hover:text-red-500 transition-all duration-300 font-medium">Contact</a>
+                </div>
+                
+                <div class="flex items-center space-x-4">
+                    <a href="#book" class="hidden md:inline-block bg-gradient-to-r from-red-500 to-amber-400 text-white px-6 py-2 rounded-full font-medium hover:shadow-lg transition-all duration-300">Book Now</a>
+                    <button id="menu-toggle" class="lg:hidden text-gray-800 focus:outline-none">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Mobile Menu -->
+        <div id="mobile-menu" class="hidden lg:hidden bg-white py-4 px-6 border-t border-gray-100">
+            <div class="flex flex-col space-y-4">
+                <a href="#home" class="text-gray-800 hover:text-red-500 transition-all duration-300 font-medium">Home</a>
+                <a href="#services" class="text-gray-800 hover:text-red-500 transition-all duration-300 font-medium">Services</a>
+                <a href="#experience" class="text-gray-800 hover:text-red-500 transition-all duration-300 font-medium">Experience</a>
+                <a href="#stylists" class="text-gray-800 hover:text-red-500 transition-all duration-300 font-medium">Stylists</a>
+                <a href="#testimonials" class="text-gray-800 hover:text-red-500 transition-all duration-300 font-medium">Testimonials</a>
+                <a href="#contact" class="text-gray-800 hover:text-red-500 transition-all duration-300 font-medium">Contact</a>
+                <a href="#book" class="bg-gradient-to-r from-red-500 to-amber-400 text-white px-6 py-2 rounded-full font-medium text-center hover:shadow-lg transition-all duration-300">Book Now</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section id="home" class="relative h-screen flex items-center justify-center overflow-hidden pt-20">
+        <div class="blob top-0 left-0"></div>
+        <div class="blob bottom-0 right-0"></div>
+        
+        <div class="container mx-auto px-6 z-10">
+            <div class="flex flex-col lg:flex-row items-center">
+                <div class="lg:w-1/2 mb-12 lg:mb-0">
+                    <h1 class="text-5xl md:text-7xl font-bold mb-6 leading-tight">
+                        <span class="block">Redefining</span>
+                        <span class="gradient-text">Hair Beauty</span>
+                    </h1>
+                    <p class="text-xl text-gray-600 mb-8 max-w-lg">At KDJ Salon, we blend cutting-edge techniques with artistic vision to create personalized looks that enhance your natural beauty.</p>
+                    <div class="flex flex-wrap gap-4">
+                        <a href="#book" class="bg-gradient-to-r from-red-500 to-amber-400 text-white px-8 py-4 rounded-full font-medium hover:shadow-lg transition-all duration-300">Book Appointment</a>
+                        <a href="#services" class="border-2 border-gray-800 text-gray-800 px-8 py-4 rounded-full font-medium hover:bg-gray-800 hover:text-white transition-all duration-300">Our Services</a>
+                    </div>
+                </div>
+                
+                <div class="lg:w-1/2 relative">
+                    <div class="relative w-full h-96 lg:h-[500px] bg-gradient-to-br from-gray-100 to-gray-200 rounded-3xl overflow-hidden flex items-center justify-center">
+                        <div class="absolute inset-0 flex items-center justify-center">
+                            <div class="w-64 h-64 bg-gradient-to-r from-red-500 to-amber-400 rounded-full opacity-20 blur-3xl"></div>
+                        </div>
+                        <div class="text-center z-10">
+                            <i class="fas fa-scissors text-8xl text-gray-700 mb-4"></i>
+                            <p class="text-xl font-medium text-gray-700">Your Transformation Starts Here</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="absolute bottom-10 left-1/2 transform -translate-x-1/2 text-center">
+            <p class="text-sm mb-2">Scroll to explore</p>
+            <div class="scroll-indicator w-6 h-10 border-2 border-gray-800 rounded-full mx-auto flex justify-center">
+                <div class="w-1 h-2 bg-gray-800 rounded-full mt-2"></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Stats Marquee -->
+    <div class="bg-gray-800 text-white py-4 overflow-hidden">
+        <div class="flex items-center marquee">
+            <div class="flex space-x-16 whitespace-nowrap px-16">
+                <div class="flex items-center">
+                    <span class="text-3xl font-bold gradient-text mr-3">15+</span>
+                    <span class="text-lg">Years of Excellence</span>
+                </div>
+                <div class="flex items-center">
+                    <span class="text-3xl font-bold gradient-text mr-3">10K+</span>
+                    <span class="text-lg">Happy Clients</span>
+                </div>
+                <div class="flex items-center">
+                    <span class="text-3xl font-bold gradient-text mr-3">50+</span>
+                    <span class="text-lg">Industry Awards</span>
+                </div>
+                <div class="flex items-center">
+                    <span class="text-3xl font-bold gradient-text mr-3">100%</span>
+                    <span class="text-lg">Client Satisfaction</span>
+                </div>
+                <!-- Repeat for seamless looping -->
+                <div class="flex items-center">
+                    <span class="text-3xl font-bold gradient-text mr-3">15+</span>
+                    <span class="text-lg">Years of Excellence</span>
+                </div>
+                <div class="flex items-center">
+                    <span class="text-3xl font-bold gradient-text mr-3">10K+</span>
+                    <span class="text-lg">Happy Clients</span>
+                </div>
+                <div class="flex items-center">
+                    <span class="text-3xl font-bold gradient-text mr-3">50+</span>
+                    <span class="text-lg">Industry Awards</span>
+                </div>
+                <div class="flex items-center">
+                    <span class="text-3xl font-bold gradient-text mr-3">100%</span>
+                    <span class="text-lg">Client Satisfaction</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Services Section -->
+    <section id="services" class="py-20 bg-white">
+        <div class="container mx-auto px-6">
+            <div class="text-center mb-16">
+                <span class="text-sm font-medium text-red-500 mb-2 block">OUR SERVICES</span>
+                <h2 class="text-4xl md:text-5xl font-bold mb-6">Tailored Beauty Experiences</h2>
+                <p class="text-xl text-gray-600 max-w-2xl mx-auto">We offer a comprehensive range of premium hair services designed to meet your unique needs.</p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- Service 1 -->
+                <div class="service-card bg-white p-8 rounded-2xl shadow-md border border-gray-100">
+                    <div class="w-16 h-16 bg-gradient-to-r from-red-500 to-amber-400 rounded-lg flex items-center justify-center mb-6">
+                        <i class="fas fa-cut text-white text-2xl"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold mb-4">Precision Haircuts</h3>
+                    <p class="text-gray-600 mb-6">Expertly crafted cuts tailored to your face shape, hair texture, and lifestyle. Our stylists stay ahead of global trends.</p>
+                    <div class="flex justify-between items-center">
+                        <span class="text-lg font-bold">From Rs. 3000</span>
+                        <a href="#book" class="text-red-500 hover:text-red-600 transition-all duration-300 font-medium">Book Now →</a>
+                    </div>
+                </div>
+                
+                <!-- Service 2 -->
+                <div class="service-card bg-white p-8 rounded-2xl shadow-md border border-gray-100">
+                    <div class="w-16 h-16 bg-gradient-to-r from-red-500 to-amber-400 rounded-lg flex items-center justify-center mb-6">
+                        <i class="fas fa-paint-brush text-white text-2xl"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold mb-4">Artistic Coloring</h3>
+                    <p class="text-gray-600 mb-6">From natural tones to vibrant fashion colors, we use ammonia-free products for stunning, healthy results.</p>
+                    <div class="flex justify-between items-center">
+                        <span class="text-lg font-bold">From Rs. 6000</span>
+                        <a href="#book" class="text-red-500 hover:text-red-600 transition-all duration-300 font-medium">Book Now →</a>
+                    </div>
+                </div>
+                
+                <!-- Service 3 -->
+                <div class="service-card bg-white p-8 rounded-2xl shadow-md border border-gray-100">
+                    <div class="w-16 h-16 bg-gradient-to-r from-red-500 to-amber-400 rounded-lg flex items-center justify-center mb-6">
+                        <i class="fas fa-spa text-white text-2xl"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold mb-4">Hair Revival</h3>
+                    <p class="text-gray-600 mb-6">Restorative treatments including keratin, Olaplex, and deep conditioning for damaged hair.</p>
+                    <div class="flex justify-between items-center">
+                        <span class="text-lg font-bold">From Rs. 4500</span>
+                        <a href="#book" class="text-red-500 hover:text-red-600 transition-all duration-300 font-medium">Book Now →</a>
+                    </div>
+                </div>
+                
+                <!-- Service 4 -->
+                <div class="service-card bg-white p-8 rounded-2xl shadow-md border border-gray-100">
+                    <div class="w-16 h-16 bg-gradient-to-r from-red-500 to-amber-400 rounded-lg flex items-center justify-center mb-6">
+                        <i class="fas fa-venus text-white text-2xl"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold mb-4">Bridal Elegance</h3>
+                    <p class="text-gray-600 mb-6">Complete bridal packages including trials, day-of styling, and bridal party services.</p>
+                    <div class="flex justify-between items-center">
+                        <span class="text-lg font-bold">From Rs. 18000</span>
+                        <a href="#book" class="text-red-500 hover:text-red-600 transition-all duration-300 font-medium">Book Now →</a>
+                    </div>
+                </div>
+                
+                <!-- Service 5 -->
+                <div class="service-card bg-white p-8 rounded-2xl shadow-md border border-gray-100">
+                    <div class="w-16 h-16 bg-gradient-to-r from-red-500 to-amber-400 rounded-lg flex items-center justify-center mb-6">
+                        <i class="fas fa-male text-white text-2xl"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold mb-4">Gentleman's Grooming</h3>
+                    <p class="text-gray-600 mb-6">Premium barber services including hot towel shaves, beard sculpting, and classic cuts.</p>
+                    <div class="flex justify-between items-center">
+                        <span class="text-lg font-bold">From Rs. 2500</span>
+                        <a href="#book" class="text-red-500 hover:text-red-600 transition-all duration-300 font-medium">Book Now →</a>
+                    </div>
+                </div>
+                
+                <!-- Service 6 -->
+                <div class="service-card bg-white p-8 rounded-2xl shadow-md border border-gray-100">
+                    <div class="w-16 h-16 bg-gradient-to-r from-red-500 to-amber-400 rounded-lg flex items-center justify-center mb-6">
+                        <i class="fas fa-magic text-white text-2xl"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold mb-4">Special Occasion</h3>
+                    <p class="text-gray-600 mb-6">Red carpet-ready styling for galas, photoshoots, and important events.</p>
+                    <div class="flex justify-between items-center">
+                        <span class="text-lg font-bold">From Rs. 4000</span>
+                        <a href="#book" class="text-red-500 hover:text-red-600 transition-all duration-300 font-medium">Book Now →</a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="text-center mt-16">
+                <a href="#book" class="inline-block border-2 border-gray-800 text-gray-800 px-8 py-3 rounded-full font-medium hover:bg-gray-800 hover:text-white transition-all duration-300">View All Services</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Salon Experience -->
+    <section id="experience" class="py-20 bg-gray-50">
+        <div class="container mx-auto px-6">
+            <div class="flex flex-col lg:flex-row items-center">
+                <div class="lg:w-1/2 mb-12 lg:mb-0 lg:pr-12">
+                    <span class="text-sm font-medium text-red-500 mb-2 block">THE EXPERIENCE</span>
+                    <h2 class="text-4xl md:text-5xl font-bold mb-6">More Than Just a Haircut</h2>
+                    <p class="text-xl text-gray-600 mb-8">At KDJ Salon, we've reimagined the salon experience from the ground up.</p>
+                    
+                    <div class="space-y-6">
+                        <div class="flex">
+                            <div class="flex-shrink-0">
+                                <div class="w-12 h-12 bg-gradient-to-r from-red-500 to-amber-400 rounded-full flex items-center justify-center text-white">
+                                    <i class="fas fa-leaf"></i>
+                                </div>
+                            </div>
+                            <div class="ml-4">
+                                <h4 class="text-lg font-bold mb-2">Eco-Conscious</h4>
+                                <p class="text-gray-600">We use sustainable products and practices to minimize our environmental impact.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="flex">
+                            <div class="flex-shrink-0">
+                                <div class="w-12 h-12 bg-gradient-to-r from-red-500 to-amber-400 rounded-full flex items-center justify-center text-white">
+                                    <i class="fas fa-heart"></i>
+                                </div>
+                            </div>
+                            <div class="ml-4">
+                                <h4 class="text-lg font-bold mb-2">Personalized Care</h4>
+                                <p class="text-gray-600">Each service begins with a detailed consultation to understand your unique needs.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="flex">
+                            <div class="flex-shrink-0">
+                                <div class="w-12 h-12 bg-gradient-to-r from-red-500 to-amber-400 rounded-full flex items-center justify-center text-white">
+                                    <i class="fas fa-award"></i>
+                                </div>
+                            </div>
+                            <div class="ml-4">
+                                <h4 class="text-lg font-bold mb-2">Expert Team</h4>
+                                <p class="text-gray-600">Our stylists undergo continuous education to master the latest techniques.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="lg:w-1/2">
+                    <div class="relative">
+                        <div class="relative w-full h-96 lg:h-[500px] bg-gradient-to-br from-gray-100 to-gray-200 rounded-3xl overflow-hidden flex items-center justify-center">
+                            <div class="absolute inset-0 flex items-center justify-center">
+                                <div class="w-64 h-64 bg-gradient-to-r from-red-500 to-amber-400 rounded-full opacity-20 blur-3xl"></div>
+                            </div>
+                            <div class="text-center z-10">
+                                <i class="fas fa-spa text-8xl text-gray-700 mb-4"></i>
+                                <p class="text-xl font-medium text-gray-700">A Sanctuary for Your Senses</p>
+                            </div>
+                        </div>
+                        
+                        <div class="absolute -bottom-6 -left-6 w-32 h-32 bg-gradient-to-r from-amber-400 to-red-500 rounded-2xl shadow-xl z-10 flex items-center justify-center">
+                            <div class="text-center text-white">
+                                <span class="block text-3xl font-bold">15+</span>
+                                <span class="text-sm">Years Experience</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Stylists Section -->
+    <section id="stylists" class="py-20 bg-white">
+        <div class="container mx-auto px-6">
+            <div class="text-center mb-16">
+                <span class="text-sm font-medium text-red-500 mb-2 block">MEET THE TEAM</span>
+                <h2 class="text-4xl md:text-5xl font-bold mb-6">Our Master Stylists</h2>
+                <p class="text-xl text-gray-600 max-w-2xl mx-auto">Each member of our team brings unique expertise and artistic vision to create your perfect look.</p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                <!-- Stylist 1 -->
+                <div class="group relative overflow-hidden rounded-2xl shadow-lg">
+                    <div class="h-80 bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
+                        <i class="fas fa-user-tie text-8xl text-gray-400 group-hover:text-red-500 transition-all duration-500"></i>
+                    </div>
+                    <div class="absolute inset-0 bg-gradient-to-t from-black to-transparent opacity-0 group-hover:opacity-80 transition-all duration-500 flex items-end p-6">
+                        <div class="transform translate-y-10 group-hover:translate-y-0 transition-all duration-500">
+                            <h3 class="text-2xl font-bold text-white mb-2">Kamal Perera</h3>
+                            <p class="text-red-400 font-medium mb-3">Creative Director</p>
+                            <p class="text-gray-300 mb-4">Specializes in precision cutting and avant-garde styling. Trained in London and Paris.</p>
+                            <div class="flex space-x-3">
+                                <a href="#" class="w-8 h-8 bg-white bg-opacity-20 rounded-full flex items-center justify-center text-white hover:bg-opacity-30 transition-all duration-300">
+                                    <i class="fab fa-instagram"></i>
+                                </a>
+                                <a href="#" class="w-8 h-8 bg-white bg-opacity-20 rounded-full flex items-center justify-center text-white hover:bg-opacity-30 transition-all duration-300">
+                                    <i class="fab fa-facebook-f"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="p-6 bg-white">
+                        <h3 class="text-xl font-bold mb-1">Kamal Perera</h3>
+                        <p class="text-red-500 font-medium">Creative Director</p>
+                    </div>
+                </div>
+                
+                <!-- Stylist 2 -->
+                <div class="group relative overflow-hidden rounded-2xl shadow-lg">
+                    <div class="h-80 bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
+                        <i class="fas fa-user text-8xl text-gray-400 group-hover:text-amber-500 transition-all duration-500"></i>
+                    </div>
+                    <div class="absolute inset-0 bg-gradient-to-t from-black to-transparent opacity-0 group-hover:opacity-80 transition-all duration-500 flex items-end p-6">
+                        <div class="transform translate-y-10 group-hover:translate-y-0 transition-all duration-500">
+                            <h3 class="text-2xl font-bold text-white mb-2">Dilini Fernando</h3>
+                            <p class="text-amber-400 font-medium mb-3">Color Specialist</p>
+                            <p class="text-gray-300 mb-4">Master colorist with expertise in balayage, ombre, and creative color techniques.</p>
+                            <div class="flex space-x-3">
+                                <a href="#" class="w-8 h-8 bg-white bg-opacity-20 rounded-full flex items-center justify-center text-white hover:bg-opacity-30 transition-all duration-300">
+                                    <i class="fab fa-instagram"></i>
+                                </a>
+                                <a href="#" class="w-8 h-8 bg-white bg-opacity-20 rounded-full flex items-center justify-center text-white hover:bg-opacity-30 transition-all duration-300">
+                                    <i class="fab fa-facebook-f"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="p-6 bg-white">
+                        <h3 class="text-xl font-bold mb-1">Dilini Fernando</h3>
+                        <p class="text-amber-500 font-medium">Color Specialist</p>
+                    </div>
+                </div>
+                
+                <!-- Stylist 3 -->
+                <div class="group relative overflow-hidden rounded-2xl shadow-lg">
+                    <div class="h-80 bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
+                        <i class="fas fa-user-astronaut text-8xl text-gray-400 group-hover:text-purple-500 transition-all duration-500"></i>
+                    </div>
+                    <div class="absolute inset-0 bg-gradient-to-t from-black to-transparent opacity-0 group-hover:opacity-80 transition-all duration-500 flex items-end p-6">
+                        <div class="transform translate-y-10 group-hover:translate-y-0 transition-all duration-500">
+                            <h3 class="text-2xl font-bold text-white mb-2">Janaki Rathnayake</h3>
+                            <p class="text-purple-400 font-medium mb-3">Bridal Director</p>
+                            <p class="text-gray-300 mb-4">Creates breathtaking bridal looks with meticulous attention to detail.</p>
+                            <div class="flex space-x-3">
+                                <a href="#" class="w-8 h-8 bg-white bg-opacity-20 rounded-full flex items-center justify-center text-white hover:bg-opacity-30 transition-all duration-300">
+                                    <i class="fab fa-instagram"></i>
+                                </a>
+                                <a href="#" class="w-8 h-8 bg-white bg-opacity-20 rounded-full flex items-center justify-center text-white hover:bg-opacity-30 transition-all duration-300">
+                                    <i class="fab fa-facebook-f"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="p-6 bg-white">
+                        <h3 class="text-xl font-bold mb-1">Janaki Rathnayake</h3>
+                        <p class="text-purple-500 font-medium">Bridal Director</p>
+                    </div>
+                </div>
+                
+                <!-- Stylist 4 -->
+                <div class="group relative overflow-hidden rounded-2xl shadow-lg">
+                    <div class="h-80 bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
+                        <i class="fas fa-user-ninja text-8xl text-gray-400 group-hover:text-blue-500 transition-all duration-500"></i>
+                    </div>
+                    <div class="absolute inset-0 bg-gradient-to-t from-black to-transparent opacity-0 group-hover:opacity-80 transition-all duration-500 flex items-end p-6">
+                        <div class="transform translate-y-10 group-hover:translate-y-0 transition-all duration-500">
+                            <h3 class="text-2xl font-bold text-white mb-2">Saman Kumara</h3>
+                            <p class="text-blue-400 font-medium mb-3">Master Barber</p>
+                            <p class="text-gray-300 mb-4">Specializes in classic and contemporary men's grooming with razor-sharp precision.</p>
+                            <div class="flex space-x-3">
+                                <a href="#" class="w-8 h-8 bg-white bg-opacity-20 rounded-full flex items-center justify-center text-white hover:bg-opacity-30 transition-all duration-300">
+                                    <i class="fab fa-instagram"></i>
+                                </a>
+                                <a href="#" class="w-8 h-8 bg-white bg-opacity-20 rounded-full flex items-center justify-center text-white hover:bg-opacity-30 transition-all duration-300">
+                                    <i class="fab fa-facebook-f"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="p-6 bg-white">
+                        <h3 class="text-xl font-bold mb-1">Saman Kumara</h3>
+                        <p class="text-blue-500 font-medium">Master Barber</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="text-center mt-16">
+                <a href="#book" class="inline-block bg-gradient-to-r from-red-500 to-amber-400 text-white px-8 py-3 rounded-full font-medium hover:shadow-lg transition-all duration-300">Meet All Stylists</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Testimonials -->
+    <section id="testimonials" class="py-20 bg-gray-50">
+        <div class="container mx-auto px-6">
+            <div class="text-center mb-16">
+                <span class="text-sm font-medium text-red-500 mb-2 block">CLIENT LOVE</span>
+                <h2 class="text-4xl md:text-5xl font-bold mb-6">What Our Clients Say</h2>
+                <p class="text-xl text-gray-600 max-w-2xl mx-auto">We measure our success by the satisfaction of our clients. Here's what they have to say.</p>
+            </div>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <!-- Testimonial 1 -->
+                <div class="bg-white p-8 rounded-2xl shadow-md border border-gray-100">
+                    <div class="flex mb-4">
+                        <i class="fas fa-star text-yellow-400"></i>
+                        <i class="fas fa-star text-yellow-400"></i>
+                        <i class="fas fa-star text-yellow-400"></i>
+                        <i class="fas fa-star text-yellow-400"></i>
+                        <i class="fas fa-star text-yellow-400"></i>
+                    </div>
+                    <p class="text-gray-600 mb-6 italic">"KDJ Salon completely transformed my damaged hair. The Olaplex treatment brought life back to my locks, and Kamal's cutting technique gave me the perfect shape. I've never received so many compliments!"</p>
+                    <div class="flex items-center">
+                        <div class="bg-gradient-to-r from-red-500 to-amber-400 rounded-full h-12 w-12 flex items-center justify-center text-white mr-4">
+                            NS
+                        </div>
+                        <div>
+                            <h4 class="font-bold">Nayana Silva</h4>
+                            <p class="text-sm text-gray-600">Client for 5 years</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Testimonial 2 -->
+                <div class="bg-white p-8 rounded-2xl shadow-md border border-gray-100">
+                    <div class="flex mb-4">
+                        <i class="fas fa-star text-yellow-400"></i>
+                        <i class="fas fa-star text-yellow-400"></i>
+                        <i class="fas fa-star text-yellow-400"></i>
+                        <i class="fas fa-star text-yellow-400"></i>
+                        <i class="fas fa-star text-yellow-400"></i>
+                    </div>
+                    <p class="text-gray-600 mb-6 italic">"Janaki understood exactly what I wanted for my wedding day. The trial session was so thorough, and on the day, my hair stayed perfect from morning until the last dance. Worth every rupee!"</p>
+                    <div class="flex items-center">
+                        <div class="bg-gradient-to-r from-red-500 to-amber-400 rounded-full h-12 w-12 flex items-center justify-center text-white mr-4">
+                            PR
+                        </div>
+                        <div>
+                            <h4 class="font-bold">Priyanka Rajapakse</h4>
+                            <p class="text-sm text-gray-600">Bride</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Testimonial 3 -->
+                <div class="bg-white p-8 rounded-2xl shadow-md border border-gray-100">
+                    <div class="flex mb-4">
+                        <i class="fas fa-star text-yellow-400"></i>
+                        <i class="fas fa-star text-yellow-400"></i>
+                        <i class="fas fa-star text-yellow-400"></i>
+                        <i class="fas fa-star text-yellow-400"></i>
+                        <i class="fas fa-star text-yellow-400"></i>
+                    </div>
+                    <p class="text-gray-600 mb-6 italic">"As a man who cares about grooming, I appreciate Saman's attention to detail. The hot towel shave is an experience everyone should try at least once. Now I won't go anywhere else."</p>
+                    <div class="flex items-center">
+                        <div class="bg-gradient-to-r from-red-500 to-amber-400 rounded-full h-12 w-12 flex items-center justify-center text-white mr-4">
+                            RF
+                        </div>
+                        <div>
+                            <h4 class="font-bold">Roshan Fernando</h4>
+                            <p class="text-sm text-gray-600">Monthly Client</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mt-16 bg-gradient-to-r from-red-500 to-amber-400 rounded-2xl p-8 text-white">
+                <div class="flex flex-col lg:flex-row items-center justify-between">
+                    <div class="lg:w-2/3 mb-6 lg:mb-0">
+                        <h3 class="text-2xl font-bold mb-4">Ready for Your Transformation?</h3>
+                        <p class="text-red-100">Book your appointment today and experience the KDJ difference.</p>
+                    </div>
+                    <a href="#book" class="bg-white text-red-500 hover:bg-gray-100 px-8 py-3 rounded-full font-medium transition-all duration-300 whitespace-nowrap">Book Now</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Booking Section -->
+    <section id="book" class="py-20 bg-white">
+        <div class="container mx-auto px-6">
+            <div class="flex flex-col lg:flex-row">
+                <div class="lg:w-1/2 mb-12 lg:mb-0 lg:pr-12">
+                    <span class="text-sm font-medium text-red-500 mb-2 block">APPOINTMENTS</span>
+                    <h2 class="text-4xl md:text-5xl font-bold mb-6">Book Your Visit</h2>
+                    <p class="text-xl text-gray-600 mb-8">Schedule your appointment with our easy online booking system or give us a call.</p>
+                    
+                    <div class="space-y-6 mb-10">
+                        <div class="flex items-start">
+                            <div class="flex-shrink-0 mt-1">
+                                <div class="w-10 h-10 bg-gradient-to-r from-red-500 to-amber-400 rounded-full flex items-center justify-center text-white">
+                                    <i class="fas fa-phone-alt"></i>
+                                </div>
+                            </div>
+                            <div class="ml-4">
+                                <h4 class="text-lg font-bold mb-1">By Phone</h4>
+                                <p class="text-gray-600">+94 11 234 5678</p>
+                                <p class="text-sm text-gray-500">Monday-Saturday: 8:00 AM - 7:00 PM</p>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-start">
+                            <div class="flex-shrink-0 mt-1">
+                                <div class="w-10 h-10 bg-gradient-to-r from-red-500 to-amber-400 rounded-full flex items-center justify-center text-white">
+                                    <i class="fas fa-map-marker-alt"></i>
+                                </div>
+                            </div>
+                            <div class="ml-4">
+                                <h4 class="text-lg font-bold mb-1">Salon Location</h4>
+                                <p class="text-gray-600">123 Beauty Street, Colombo 03</p>
+                                <p class="text-sm text-gray-500">Between Liberty Plaza and Crescat Boulevard</p>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-start">
+                            <div class="flex-shrink-0 mt-1">
+                                <div class="w-10 h-10 bg-gradient-to-r from-red-500 to-amber-400 rounded-full flex items-center justify-center text-white">
+                                    <i class="fas fa-clock"></i>
+                                </div>
+                            </div>
+                            <div class="ml-4">
+                                <h4 class="text-lg font-bold mb-1">Hours</h4>
+                                <p class="text-gray-600">Monday - Friday: 9:00 AM - 7:00 PM</p>
+                                <p class="text-gray-600">Saturday: 9:00 AM - 6:00 PM</p>
+                                <p class="text-gray-600">Sunday: 10:00 AM - 4:00 PM</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <h4 class="text-lg font-bold mb-4">Follow Us</h4>
+                        <div class="flex space-x-4">
+                            <a href="#" class="w-12 h-12 bg-gray-100 hover:bg-gray-200 rounded-full flex items-center justify-center text-gray-700 transition-all duration-300">
+                                <i class="fab fa-facebook-f"></i>
+                            </a>
+                            <a href="#" class="w-12 h-12 bg-gray-100 hover:bg-gray-200 rounded-full flex items-center justify-center text-gray-700 transition-all duration-300">
+                                <i class="fab fa-instagram"></i>
+                            </a>
+                            <a href="#" class="w-12 h-12 bg-gray-100 hover:bg-gray-200 rounded-full flex items-center justify-center text-gray-700 transition-all duration-300">
+                                <i class="fab fa-tiktok"></i>
+                            </a>
+                            <a href="#" class="w-12 h-12 bg-gray-100 hover:bg-gray-200 rounded-full flex items-center justify-center text-gray-700 transition-all duration-300">
+                                <i class="fab fa-whatsapp"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="lg:w-1/2">
+                    <div class="bg-gray-50 p-8 rounded-2xl shadow-md">
+                        <h3 class="text-2xl font-bold mb-6">Book Online</h3>
+                        <form id="booking-form">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <label for="name" class="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
+                                    <input type="text" id="name" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all duration-300">
+                                </div>
+                                <div>
+                                    <label for="email" class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                                    <input type="email" id="email" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all duration-300">
+                                </div>
+                                <div>
+                                    <label for="phone" class="block text-sm font-medium text-gray-700 mb-1">Phone</label>
+                                    <input type="tel" id="phone" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all duration-300">
+                                </div>
+                                <div>
+                                    <label for="service" class="block text-sm font-medium text-gray-700 mb-1">Service</label>
+                                    <select id="service" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all duration-300">
+                                        <option>Select a service</option>
+                                        <option>Haircut</option>
+                                        <option>Coloring</option>
+                                        <option>Treatment</option>
+                                        <option>Bridal</option>
+                                        <option>Men's Grooming</option>
+                                        <option>Styling</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label for="date" class="block text-sm font-medium text-gray-700 mb-1">Date</label>
+                                    <input type="date" id="date" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all duration-300">
+                                </div>
+                                <div>
+                                    <label for="time" class="block text-sm font-medium text-gray-700 mb-1">Time</label>
+                                    <select id="time" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all duration-300">
+                                        <option>Select a time</option>
+                                        <option>9:00 AM</option>
+                                        <option>10:00 AM</option>
+                                        <option>11:00 AM</option>
+                                        <option>12:00 PM</option>
+                                        <option>1:00 PM</option>
+                                        <option>2:00 PM</option>
+                                        <option>3:00 PM</option>
+                                        <option>4:00 PM</option>
+                                        <option>5:00 PM</option>
+                                        <option>6:00 PM</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="mt-6">
+                                <label for="notes" class="block text-sm font-medium text-gray-700 mb-1">Special Requests</label>
+                                <textarea id="notes" rows="3" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all duration-300"></textarea>
+                            </div>
+                            <button type="submit" class="w-full mt-8 bg-gradient-to-r from-red-500 to-amber-400 text-white px-6 py-4 rounded-lg font-medium hover:shadow-lg transition-all duration-300">Confirm Booking</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contact" class="py-20 bg-gray-900 text-white">
+        <div class="container mx-auto px-6">
+            <div class="flex flex-col lg:flex-row">
+                <div class="lg:w-1/2 mb-12 lg:mb-0 lg:pr-12">
+                    <span class="text-sm font-medium text-red-400 mb-2 block">CONTACT US</span>
+                    <h2 class="text-4xl md:text-5xl font-bold mb-6">Get In Touch</h2>
+                    <p class="text-xl text-gray-300 mb-8">Have questions? We're here to help. Reach out to us through any of these channels.</p>
+                    
+                    <div class="space-y-6">
+                        <div class="flex items-start">
+                            <div class="flex-shrink-0 mt-1">
+                                <div class="w-10 h-10 bg-gradient-to-r from-red-500 to-amber-400 rounded-full flex items-center justify-center text-white">
+                                    <i class="fas fa-map-marker-alt"></i>
+                                </div>
+                            </div>
+                            <div class="ml-4">
+                                <h4 class="text-lg font-bold mb-1">Visit Us</h4>
+                                <p class="text-gray-300">123 Beauty Street, Colombo 03</p>
+                                <p class="text-gray-400 text-sm">Between Liberty Plaza and Crescat Boulevard</p>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-start">
+                            <div class="flex-shrink-0 mt-1">
+                                <div class="w-10 h-10 bg-gradient-to-r from-red-500 to-amber-400 rounded-full flex items-center justify-center text-white">
+                                    <i class="fas fa-phone-alt"></i>
+                                </div>
+                            </div>
+                            <div class="ml-4">
+                                <h4 class="text-lg font-bold mb-1">Call Us</h4>
+                                <p class="text-gray-300">+94 11 234 5678</p>
+                                <p class="text-gray-300">+94 76 789 0123</p>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-start">
+                            <div class="flex-shrink-0 mt-1">
+                                <div class="w-10 h-10 bg-gradient-to-r from-red-500 to-amber-400 rounded-full flex items-center justify-center text-white">
+                                    <i class="fas fa-envelope"></i>
+                                </div>
+                            </div>
+                            <div class="ml-4">
+                                <h4 class="text-lg font-bold mb-1">Email Us</h4>
+                                <p class="text-gray-300">info@kdjsalon.com</p>
+                                <p class="text-gray-300">bookings@kdjsalon.com</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="lg:w-1/2">
+                    <div class="bg-gray-800 p-8 rounded-2xl">
+                        <h3 class="text-2xl font-bold mb-6">Send a Message</h3>
+                        <form>
+                            <div class="mb-6">
+                                <label for="contact-name" class="block text-sm font-medium text-gray-300 mb-1">Name</label>
+                                <input type="text" id="contact-name" class="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent text-white transition-all duration-300">
+                            </div>
+                            <div class="mb-6">
+                                <label for="contact-email" class="block text-sm font-medium text-gray-300 mb-1">Email</label>
+                                <input type="email" id="contact-email" class="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent text-white transition-all duration-300">
+                            </div>
+                            <div class="mb-6">
+                                <label for="contact-subject" class="block text-sm font-medium text-gray-300 mb-1">Subject</label>
+                                <input type="text" id="contact-subject" class="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent text-white transition-all duration-300">
+                            </div>
+                            <div class="mb-6">
+                                <label for="contact-message" class="block text-sm font-medium text-gray-300 mb-1">Message</label>
+                                <textarea id="contact-message" rows="4" class="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent text-white transition-all duration-300"></textarea>
+                            </div>
+                            <button type="submit" class="w-full bg-gradient-to-r from-red-500 to-amber-400 text-white px-6 py-4 rounded-lg font-medium hover:shadow-lg transition-all duration-300">Send Message</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-gray-950 text-gray-400 py-12">
+        <div class="container mx-auto px-6">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-10">
+                <div>
+                    <a href="#" class="text-2xl font-bold mb-4 block">
+                        <span class="gradient-text">KDJ</span> <span class="text-white">SALON</span>
+                    </a>
+                    <p class="mb-6">Luxury hair experiences crafted by master stylists in the heart of Colombo.</p>
+                    <div class="flex space-x-4">
+                        <a href="#" class="w-10 h-10 bg-gray-800 hover:bg-gray-700 rounded-full flex items-center justify-center text-white transition-all duration-300">
+                            <i class="fab fa-facebook-f"></i>
+                        </a>
+                        <a href="#" class="w-10 h-10 bg-gray-800 hover:bg-gray-700 rounded-full flex items-center justify-center text-white transition-all duration-300">
+                            <i class="fab fa-instagram"></i>
+                        </a>
+                        <a href="#" class="w-10 h-10 bg-gray-800 hover:bg-gray-700 rounded-full flex items-center justify-center text-white transition-all duration-300">
+                            <i class="fab fa-tiktok"></i>
+                        </a>
+                        <a href="#" class="w-10 h-10 bg-gray-800 hover:bg-gray-700 rounded-full flex items-center justify-center text-white transition-all duration-300">
+                            <i class="fab fa-youtube"></i>
+                        </a>
+                    </div>
+                </div>
+                
+                <div>
+                    <h4 class="text-white text-lg font-bold mb-6">Quick Links</h4>
+                    <ul class="space-y-3">
+                        <li><a href="#home" class="hover:text-white transition-all duration-300">Home</a></li>
+                        <li><a href="#services" class="hover:text-white transition-all duration-300">Services</a></li>
+                        <li><a href="#experience" class="hover:text-white transition-all duration-300">Experience</a></li>
+                        <li><a href="#stylists" class="hover:text-white transition-all duration-300">Stylists</a></li>
+                        <li><a href="#testimonials" class="hover:text-white transition-all duration-300">Testimonials</a></li>
+                        <li><a href="#contact" class="hover:text-white transition-all duration-300">Contact</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h4 class="text-white text-lg font-bold mb-6">Services</h4>
+                    <ul class="space-y-3">
+                        <li><a href="#" class="hover:text-white transition-all duration-300">Haircuts</a></li>
+                        <li><a href="#" class="hover:text-white transition-all duration-300">Coloring</a></li>
+                        <li><a href="#" class="hover:text-white transition-all duration-300">Treatments</a></li>
+                        <li><a href="#" class="hover:text-white transition-all duration-300">Bridal</a></li>
+                        <li><a href="#" class="hover:text-white transition-all duration-300">Men's Grooming</a></li>
+                        <li><a href="#" class="hover:text-white transition-all duration-300">Styling</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h4 class="text-white text-lg font-bold mb-6">Newsletter</h4>
+                    <p class="mb-4">Subscribe to receive updates on special offers and events.</p>
+                    <form class="flex">
+                        <input type="email" placeholder="Your email" class="px-4 py-3 bg-gray-800 text-white rounded-l-lg focus:outline-none focus:ring-2 focus:ring-red-500 w-full">
+                        <button type="submit" class="bg-gradient-to-r from-red-500 to-amber-400 text-white px-4 py-3 rounded-r-lg hover:shadow-lg transition-all duration-300">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </form>
+                </div>
+            </div>
+            
+            <div class="border-t border-gray-800 mt-12 pt-8 flex flex-col md:flex-row justify-between items-center">
+                <p>&copy; 2023 KDJ Salon. All rights reserved.</p>
+                <div class="flex space-x-6 mt-4 md:mt-0">
+                    <a href="#" class="hover:text-white transition-all duration-300">Privacy Policy</a>
+                    <a href="#" class="hover:text-white transition-all duration-300">Terms of Service</a>
+                    <a href="#" class="hover:text-white transition-all duration-300">Sitemap</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Preloader
+        window.addEventListener('load', function() {
+            const preloader = document.getElementById('preloader');
+            gsap.to(preloader, {
+                opacity: 0,
+                duration: 0.5,
+                onComplete: function() {
+                    preloader.style.display = 'none';
+                }
+            });
+        });
+
+        // Mobile menu toggle
+        const menuToggle = document.getElementById('menu-toggle');
+        const mobileMenu = document.getElementById('mobile-menu');
+        
+        menuToggle.addEventListener('click', function() {
+            mobileMenu.classList.toggle('hidden');
+        });
+
+        // Smooth scrolling for navigation links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                const targetId = this.getAttribute('href');
+                const targetElement = document.querySelector(targetId);
+                
+                if (targetElement) {
+                    window.scrollTo({
+                        top: targetElement.offsetTop - 100,
+                        behavior: 'smooth'
+                    });
+                    
+                    // Close mobile menu if open
+                    if (!mobileMenu.classList.contains('hidden')) {
+                        mobileMenu.classList.add('hidden');
+                    }
+                }
+            });
+        });
+
+        // GSAP Animations
+        gsap.registerPlugin(ScrollTrigger);
+        
+        // Animate hero text
+        gsap.from("#home h1 span", {
+            y: 50,
+            opacity: 0,
+            duration: 1,
+            stagger: 0.2,
+            ease: "power3.out"
+        });
+        
+        gsap.from("#home p, #home a", {
+            y: 30,
+            opacity: 0,
+            duration: 1,
+            delay: 0.6,
+            stagger: 0.2,
+            ease: "power3.out"
+        });
+        
+        // Animate service cards on scroll
+        gsap.utils.toArray(".service-card").forEach(card => {
+            gsap.from(card, {
+                scrollTrigger: {
+                    trigger: card,
+                    start: "top 80%",
+                    toggleActions: "play none none none"
+                },
+                y: 50,
+                opacity: 0,
+                duration: 0.8,
+                ease: "power2.out"
+            });
+        });
+        
+        // Animate testimonials
+        gsap.utils.toArray("#testimonials .bg-white").forEach((testimonial, i) => {
+            gsap.from(testimonial, {
+                scrollTrigger: {
+                    trigger: testimonial,
+                    start: "top 80%",
+                    toggleActions: "play none none none"
+                },
+                x: i % 2 === 0 ? -50 : 50,
+                opacity: 0,
+                duration: 0.8,
+                ease: "power2.out"
+            });
+        });
+
+        // 3D Background with Three.js
+        const threeContainer = document.getElementById('threejs-bg');
+        if (threeContainer) {
+            // Set container to cover the whole viewport
+            threeContainer.style.position = 'fixed';
+            threeContainer.style.top = '0';
+            threeContainer.style.left = '0';
+            threeContainer.style.width = '100%';
+            threeContainer.style.height = '100%';
+            threeContainer.style.zIndex = '-1';
+            
+            // Scene setup
+            const scene = new THREE.Scene();
+            const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            threeContainer.appendChild(renderer.domElement);
+            
+            // Create floating geometry
+            const geometry = new THREE.TorusKnotGeometry(10, 3, 100, 16);
+            const material = new THREE.MeshBasicMaterial({ 
+                color: 0xff4d4d,
+                wireframe: true,
+                transparent: true,
+                opacity: 0.05
+            });
+            const knot = new THREE.Mesh(geometry, material);
+            scene.add(knot);
+            
+            camera.position.z = 30;
+            
+            // Animation
+            function animate() {
+                requestAnimationFrame(animate);
+                knot.rotation.x += 0.001;
+                knot.rotation.y += 0.002;
+                renderer.render(scene, camera);
+            }
+            
+            // Handle window resize
+            window.addEventListener('resize', () => {
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+            });
+            
+            animate();
+        }
+
+        // p5.js Hair Animation
+        const hairCanvas = document.getElementById('hair-canvas');
+        if (hairCanvas) {
+            const hairSketch = (p) => {
+                let hairs = [];
+                let numHairs = 100;
+                
+                p.setup = () => {
+                    p.createCanvas(window.innerWidth, window.innerHeight);
+                    
+                    // Create hairs
+                    for (let i = 0; i < numHairs; i++) {
+                        hairs.push({
+                            x: p.random(p.width),
+                            y: p.random(p.height),
+                            length: p.random(50, 150),
+                            thickness: p.random(0.5, 2),
+                            color: p.color(255, p.random(150, 220), p.random(100, 180), p.random(0.2, 0.8)),
+                            angle: p.random(p.TWO_PI),
+                            speed: p.random(0.01, 0.03),
+                            baseX: p.random(p.width),
+                            baseY: p.random(p.height)
+                        });
+                    }
+                };
+                
+                p.draw = () => {
+                    p.clear();
+                    
+                    // Update and draw hairs
+                    for (let hair of hairs) {
+                        // Update position with slight movement
+                        hair.angle += hair.speed;
+                        hair.x = hair.baseX + p.sin(hair.angle) * 20;
+                        hair.y = hair.baseY + p.cos(hair.angle) * 10;
+                        
+                        // Draw hair
+                        p.stroke(hair.color);
+                        p.strokeWeight(hair.thickness);
+                        p.noFill();
+                        
+                        // Draw a wavy hair strand
+                        p.beginShape();
+                        for (let i = 0; i < 10; i++) {
+                            let segmentX = hair.x + p.sin(i * 0.5 + hair.angle * 2) * 10;
+                            let segmentY = hair.y - i * (hair.length / 10);
+                            p.curveVertex(segmentX, segmentY);
+                        }
+                        p.endShape();
+                    }
+                };
+                
+                p.windowResized = () => {
+                    p.resizeCanvas(window.innerWidth, window.innerHeight);
+                };
+            };
+            
+            new p5(hairSketch, hairCanvas);
+        }
+
+        // Form submission
+        const bookingForm = document.getElementById('booking-form');
+        if (bookingForm) {
+            bookingForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                
+                // Show success message
+                const submitBtn = bookingForm.querySelector('button[type="submit"]');
+                const originalText = submitBtn.textContent;
+                
+                submitBtn.textContent = 'Booking Confirmed!';
+                submitBtn.classList.remove('from-red-500', 'to-amber-400');
+                submitBtn.classList.add('bg-green-500');
+                
+                // Reset form
+                bookingForm.reset();
+                
+                // Reset button after delay
+                setTimeout(() => {
+                    submitBtn.textContent = originalText;
+                    submitBtn.classList.remove('bg-green-500');
+                    submitBtn.classList.add('from-red-500', 'to-amber-400');
+                }, 3000);
+            });
+        }
+    </script>
+</body>
+</html>
